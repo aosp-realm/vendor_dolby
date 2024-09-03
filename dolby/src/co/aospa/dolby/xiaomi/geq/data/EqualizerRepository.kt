@@ -42,13 +42,6 @@ class EqualizerRepository(
         )
     }
 
-    val defaultPreset = Preset(
-        name = "Flat",
-        bandGains = List<BandGain>(10) { index ->
-            BandGain(band = tenBandFreqs[index])
-        }
-    )
-
     val builtInPresets: List<Preset> by lazy {
         val names = context.resources.getStringArray(
             R.array.dolby_preset_entries
@@ -67,6 +60,8 @@ class EqualizerRepository(
             }
         }
     }
+
+    val defaultPreset by lazy { builtInPresets[0] } // Flat
 
     // User defined presets are stored in a SharedPreferences as
     // key - preset name
@@ -97,7 +92,7 @@ class EqualizerRepository(
     }
 
     suspend fun getBandGains(): List<BandGain> = withContext(Dispatchers.IO) {
-        val gains = profileSharedPrefs.getString(PREF_PRESET, "")
+        val gains = profileSharedPrefs.getString(PREF_PRESET, dolbyController.getPreset())
         return@withContext if (gains.isNullOrEmpty()) {
             defaultPreset.bandGains
         } else {
